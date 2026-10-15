@@ -1510,43 +1510,62 @@
         /********************************************************************
          * 7. STUDENT CONTROLLER & SELF-PACED MODE
          ********************************************************************/
-        async function studentJoinLiveRoom() {
-            const pin = document.getElementById('join-pin-input').value.trim();
-            const name = document.getElementById('join-name-input').value.trim() || 'Student_' + Math.floor(Math.random() * 900 + 100);
-            if (pin.length !== 4) return alert('Please enter a 4-digit Game PIN.');
+async function studentJoinLiveRoom() {
+    const pin = document.getElementById('join-pin-input').value.trim();
+    const name = document.getElementById('join-name-input').value.trim() || ('Student_' + Math.floor(Math.random() * 900 + 100));
+    if (pin.length !== 4) return alert('Please enter a 4-digit Game PIN.');
 
-            myPlayerName = name;
-            localStorage.setItem('shahdom_student_name', myPlayerName);
-            currentRoomPin = pin;
-            myScore = 0; myStreak = 0; isSelfPacedMode = false;
+    myPlayerName = name;
+    localStorage.setItem('shahdom_student_name', myPlayerName);
+    currentRoomPin = pin;
+    myScore = 0;
+    myStreak = 0;
+    isSelfPacedMode = false;
 
-            // Push player to Firebase Realtime Database or Firestore so instructor board sees them instantly!
-            try {
-                if (dbRT) {
-                    await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
-                        name: myPlayerName,
-                        score: 0,
-                        joinedAt: Date.now()
-                    });
-                } else if (dbFS) {
-                    await dbFS.collection('rooms').doc(pin).collection('players').doc(myPlayerId).set({
-                        name: myPlayerName,
-                        score: 0,
-                        joinedAt: Date.now()
-                    });
-                }
-            } catch (err) {
-                console.error("Failed to sync player to cloud:", err);
-            }
-
-            document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
-            document.getElementById('student-player-label').innerText = myPlayerName;
-            document.getElementById('student-score-badge').innerText = '0 pts';
-            showView('student');
-
-            activeQuizObj = quizzes[0];
-            renderStudentQuestionScreen(activeQuizObj.questions[0], 0, activeQuizObj.questions.length);
+    // Ensure Firebase database instance exists before writing
+    if (!dbRT && firebase.apps.length) {
+        try {
+            dbRT = firebase.database();
+        } catch (e) {
+            console.error("RTDB init fallback failed:", e);
         }
+    }
+
+    // Write player entry to the room in Firebase Realtime Database
+    if (dbRT) {
+        try {
+            await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
+                name: myPlayerName,
+                score: 0,
+                joinedAt: Date.now()
+            });
+        } catch (err) {
+            console.error("Firebase write error:", err);
+            alert("Could not connect to session. Check your connection or PIN: " + err.message);
+            return;
+        }
+    } else {
+        alert("Firebase Realtime Database is not initialized. Please verify your configuration.");
+        return;
+    }
+
+    document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
+    document.getElementById('student-player-label').innerText = myPlayerName;
+    document.getElementById('student-score-badge').innerText = '0 pts';
+    showView('student');
+
+    // Listen for room status updates from instructor
+    dbRT.ref('rooms/' + pin).on('value', snap => {
+        const roomData = snap.val();
+        if (!roomData) return;
+        if (roomData.status === 'question' && roomData.qIdx !== undefined) {
+            // Load live question pushed by host
+            if (activeQuizObj && activeQuizObj.questions[roomData.qIdx]) {
+                renderStudentQuestionScreen(activeQuizObj.questions[roomData.qIdx], roomData.qIdx, activeQuizObj.questions.length);
+            }
+        }
+    });
+}
 
         function renderStudentQuestionScreen(qObj, qIndex, qTotal) {
             document.getElementById('student-feedback-box').classList.add('hidden');
