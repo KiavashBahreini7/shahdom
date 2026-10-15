@@ -1520,6 +1520,25 @@
             currentRoomPin = pin;
             myScore = 0; myStreak = 0; isSelfPacedMode = false;
 
+            // Push player to Firebase Realtime Database or Firestore so instructor board sees them instantly!
+            try {
+                if (dbRT) {
+                    await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
+                        name: myPlayerName,
+                        score: 0,
+                        joinedAt: Date.now()
+                    });
+                } else if (dbFS) {
+                    await dbFS.collection('rooms').doc(pin).collection('players').doc(myPlayerId).set({
+                        name: myPlayerName,
+                        score: 0,
+                        joinedAt: Date.now()
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to sync player to cloud:", err);
+            }
+
             document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
             document.getElementById('student-player-label').innerText = myPlayerName;
             document.getElementById('student-score-badge').innerText = '0 pts';
