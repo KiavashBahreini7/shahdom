@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full" data-theme="royal">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shahdom — Learn. Play. Conquer. | Dr. Kiavash Bahreini</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <!-- Firebase Compat SDKs (App, Auth, Firestore, Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root[data-theme="royal"] {
+            --bg-main: #f7f6f2;
+            --bg-dots: transparent;
+            --header-bg: #062b61;
+            --header-text: #ffffff;
+            --header-border: rgba(255, 255, 255, 0.14);
+            --hero-bg: linear-gradient(180deg, #062b61 0%, #0a4da6 68%, #073578 100%);
+            --hero-text: #ffffff;
+            --hero-subtext: #cbd5e1;
+            --accent-coral: #eb6e4b;
+            --accent-coral-hover: #d95d3a;
+            --mode-1: #0d47a1;
+            --mode-2: #ee7758;
+            --mode-3: #2e944b;
+            --mode-4: #392282;
+            --mint-card: #e3efe8;
+        }
+
+        :root[data-theme="daylight"] {
+            --bg-main: #ffffff;
+            --bg-dots: #e2e8f0;
+            --header-bg: #ffffff;
+            --header-text: #0f172a;
+            --header-border: #e2e8f0;
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --hero-text: #0f172a;
+            --hero-subtext: #475569;
+            --accent-coral: #2563eb;
+            --accent-coral-hover: #1d4ed8;
+            --mode-1: #e21b3c;
+            --mode-2: #1368ce;
+            --mode-3: #26890c;
+            --mode-4: #d89e00;
+            --mint-card: #f0fdf4;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: #0f172a;
+            background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
+            background-size: 24px 24px;
+            transition: background-color 0.25s ease;
+        }
+
+        code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-handwriting { font-family: 'Caveat', cursive; }
+
+        /* Dynamic Theme Classes */
+        .theme-header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            border-bottom: 1px solid var(--header-border);
+            transition: all 0.25s ease;
+        }
+        .theme-hero {
+            background: var(--hero-bg);
+            color: var(--hero-text);
+            transition: all 0.3s ease;
+        }
+        .theme-hero-sub { color: var(--hero-subtext); }
+        .btn-coral {
+            background-color: var(--accent-coral);
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .btn-coral:hover { background-color: var(--accent-coral-hover); transform: translateY(-1px); }
+
+        /* 4 Signature Palette Cards (Adapts to Royal vs Daylight) */
+        .palette-card-1 { background-color: var(--mode-1); color: #ffffff; }
+        .palette-card-2 { background-color: var(--mode-2); color: #ffffff; }
+        .palette-card-3 { background-color: var(--mode-3); color: #ffffff; }
+        .palette-card-4 { background-color: var(--mode-4); color: #ffffff; }
+        .mint-promo-card { background-color: var(--mint-card); }
+
+        /* Vibrant Interactive Answer Buttons (Adapts to active theme!) */
+        html[data-theme="royal"] .ans-0 { background: linear-gradient(135deg, #0d47a1 0%, #083275 100%); box-shadow: 0 5px 0 #05204d; }
+        html[data-theme="royal"] .ans-1 { background: linear-gradient(135deg, #ee7758 0%, #d95d3a 100%); box-shadow: 0 5px 0 #a33e22; }
+        html[data-theme="royal"] .ans-2 { background: linear-gradient(135deg, #2e944b 0%, #217338 100%); box-shadow: 0 5px 0 #154d25; }
+        html[data-theme="royal"] .ans-3 { background: linear-gradient(135deg, #392282 0%, #281661 100%); box-shadow: 0 5px 0 #180c3d; }
+
+        html[data-theme="daylight"] .ans-0 { background: linear-gradient(135deg, #e21b3c 0%, #c41230 100%); box-shadow: 0 5px 0 #990d24; }
+        html[data-theme="daylight"] .ans-1 { background: linear-gradient(135deg, #1368ce 0%, #0e52a5 100%); box-shadow: 0 5px 0 #093b78; }
+        html[data-theme="daylight"] .ans-2 { background: linear-gradient(135deg, #26890c 0%, #1d6b09 100%); box-shadow: 0 5px 0 #134705; }
+        html[data-theme="daylight"] .ans-3 { background: linear-gradient(135deg, #d89e00 0%, #b88400 100%); box-shadow: 0 5px 0 #8a6300; }
+
+        .ans-0:active, .ans-1:active, .ans-2:active, .ans-3:active { transform: translateY(3px); }
+
+        @keyframes float-boat { 0%, 100% { transform: translateY(0px) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
+        .island-avatar { animation: float-boat 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amber-400 selection:text-slate-900">
+
+    <!-- =====================================================
+         TOP NAVIGATION BAR (Shahdom Brand + Theme Switcher)
+         ===================================================== -->
+    <header class="theme-header px-4 md:px-10 py-3.5 flex flex-wrap justify-between items-center sticky top-0 z-50 shadow-sm gap-3">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="showView('home')">
+                <span class="text-xl">👑</span>
+                <span class="text-2xl font-extrabold tracking-tight">Shah<span class="text-[#eb6e4b]">dom</span></span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 text-sm font-semibold">
+                <button onclick="showView('home')" class="px-4 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition">Home</button>
+                <button onclick="document.getElementById('featured-section').scrollIntoView({behavior:'smooth'})" class="px-4 py-1.5 rounded-full opacity-80 hover:opacity-100 transition">Discover</button>
+                <button onclick="openInstructorGate()" class="px-4 py-1.5 rounded-full opacity-80 hover:opacity-100 transition">My Games</button>
+                <button onclick="showView('island')" class="px-4 py-1.5 rounded-full opacity-80 hover:opacity-100 transition">Reports</button>
+            </nav>
+        </div>
+
+        <!-- Right Controls: Search Filter + 1-Click Theme Switcher + Cloud Status + Profile -->
+        <div class="flex items-center space-x-2.5 md:space-x-3">
+            <!-- Quick Course Search Filter -->
+            <div class="hidden lg:flex items-center bg-white/10 border border-white/20 rounded-full px-3.5 py-1.5 text-xs">
+                <span class="mr-2 opacity-70">🔍</span>
+                <input type="text" id="course-search-input" oninput="renderPublicQuizCards(this.value)" placeholder="Search courses or topics..." class="bg-transparent placeholder-current opacity-85 focus:outline-none w-44 font-medium">
+            </div>
+
+            <!-- 1-CLICK COLOR THEME SWITCHER (For Instructor & Students!) -->
+            <button onclick="toggleColorTheme()" id="theme-toggle-btn" class="flex items-center space-x-1.5 bg-white/15 hover:bg-white/25 border border-white/25 px-3.5 py-1.5 rounded-full text-xs font-extrabold transition shadow-sm" title="Switch between Royal Twilight and Classic Daylight themes">
+                <span id="theme-toggle-icon">🌌</span>
+                <span id="theme-toggle-label">Theme: Royal Twilight</span>
+            </button>
+
+            <!-- Cloud Status Pill -->
+            <div id="cloud-status-pill" class="hidden sm:flex items-center space-x-1.5 bg-black/20 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold">
+                <span id="cloud-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="cloud-status-text">Demo Mode</span>
+            </div>
+
+            <!-- Instructor Studio Button -->
+            <button onclick="openInstructorGate()" class="btn-coral px-4 py-2 rounded-full font-extrabold text-xs shadow-md flex items-center space-x-1.5">
+                <span class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[11px]">K</span>
+                <span>Instructor Studio</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         VIEW 1: HOME PORTAL (Shahdom — Learn. Play. Conquer.)
+         ===================================================== -->
+    <div id="view-home" class="flex-1 flex flex-col">
+        <!-- HERO BANNER (Royal Twilight Gradient + Original Vector Island + Live PIN Join) -->
+        <section class="theme-hero relative overflow-hidden border-b border-slate-200/20">
+            <div class="max-w-7xl mx-auto px-4 md:px-10 py-10 md:py-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                
+                <!-- Left Column: "Learn. Play. Conquer." Typography & CTAs -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="inline-flex items-center space-x-2 bg-white/10 border border-white/20 px-3.5 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase">
+                        <span>👑</span><span>Shahdom — Rule the Quiz</span>
+                    </div>
+                    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.06]">
+                        Learn.<br>
+                        Play.<br>
+                        Conquer.
+                    </h1>
+                    <p class="theme-hero-sub text-base md:text-lg font-medium max-w-md leading-relaxed">
+                        Enter the Shahdom. Turn every computer science lecture and exam review into an engaging live conquest and climb the Course Island leaderboard.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                        <button onclick="openInstructorGate()" class="btn-coral font-extrabold px-7 py-3.5 rounded-full text-sm shadow-lg">
+                            Create a Quiz
+                        </button>
+                        <button onclick="document.getElementById('join-pin-input').focus()" class="bg-slate-900/40 hover:bg-slate-900/60 text-white border-2 border-white/70 font-extrabold px-7 py-3.5 rounded-full text-sm transition">
+                            Join a Game
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Center/Right Column: Original Glowing Vector Island Silhouette + Live PIN Card -->
+                <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    
+                    <!-- Original Custom SVG Artwork (Glowing Twilight Course Island Citadel) -->
+                    <div class="md:col-span-6 relative flex flex-col items-center justify-center">
+                        <div class="font-handwriting text-2xl md:text-3xl text-sky-200 -rotate-6 self-end mr-4 mb-1 select-none">
+                            Curiosity brings us together.
+                        </div>
+                        <svg viewBox="0 0 420 260" class="w-full max-w-sm drop-shadow-2xl">
+                            <defs>
+                                <radialGradient id="sunsetGlow" cx="50%" cy="62%" r="50%">
+                                    <stop offset="0%" stop-color="#ff9a5a" stop-opacity="0.95"/>
+                                    <stop offset="45%" stop-color="#eb6e4b" stop-opacity="0.55"/>
+                                    <stop offset="100%" stop-color="#0a4da6" stop-opacity="0"/>
+                                </radialGradient>
+                                <linearGradient id="emeraldReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#34d399" stop-opacity="0.8"/>
+                                    <stop offset="100%" stop-color="#062b61" stop-opacity="0.95"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Warm Sunset Aura Behind the Island -->
+                            <circle cx="210" cy="145" r="115" fill="url(#sunsetGlow)"/>
+                            <!-- Stars -->
+                            <circle cx="70" cy="45" r="1.5" fill="#ffffff" opacity="0.8"/>
+                            <circle cx="140" cy="30" r="2" fill="#fde68a" opacity="0.9"/>
+                            <circle cx="330" cy="50" r="1.5" fill="#ffffff" opacity="0.7"/>
+                            <circle cx="280" cy="25" r="2" fill="#ffffff" opacity="0.8"/>
+                            <!-- Island Mountain & Royal Knowledge Citadel Silhouette (Original Vector) -->
+                            <path d="M 45 190 Q 95 130 155 150 Q 210 75 265 145 Q 320 120 375 190 Z" fill="#1e1b4b"/>
+                            <!-- Glowing Windows & Citadel Dome -->
+                            <path d="M 192 115 C 192 92, 228 92, 228 115 Z" fill="#fbbf24"/>
+                            <rect x="186" y="115" width="48" height="42" rx="3" fill="#311042" stroke="#fde68a" stroke-width="2"/>
+                            <rect x="196" y="124" width="8" height="16" rx="4" fill="#fef08a"/>
+                            <rect x="216" y="124" width="8" height="16" rx="4" fill="#fef08a"/>
+                            <!-- Neon Emerald Horizon Base -->
+                            <rect x="40" y="182" width="340" height="8" rx="4" fill="#4ade80" opacity="0.9"/>
+                            <!-- Water Reflection Pool -->
+                            <path d="M 20 190 L 400 190 L 420 250 L 0 250 Z" fill="url(#emeraldReflection)"/>
+                            <path d="M 150 205 L 270 205 M 170 220 L 250 220 M 190 235 L 230 235" stroke="#a7f3d0" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+                        </svg>
+                    </div>
+
+                    <!-- Live Classroom PIN Entry Box -->
+                    <div class="md:col-span-6 bg-white text-slate-900 rounded-3xl p-6 shadow-2xl border-2 border-white/40 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-extrabold text-slate-900">Enter Shahdom Live</h3>
+                            <span class="bg-[#eb6e4b] text-white text-[11px] font-black px-2.5 py-1 rounded-full">LIVE PIN</span>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">4-Digit Room PIN</label>
+                            <input type="text" id="join-pin-input" maxlength="4" placeholder="2841" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#0d47a1] rounded-2xl px-4 py-2.5 text-center text-2xl font-mono font-extrabold tracking-widest text-slate-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Your Name / Panther ID</label>
+                            <input type="text" id="join-name-input" maxlength="28" placeholder="First Name & Initial" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#0d47a1] rounded-2xl px-4 py-2.5 text-center text-sm font-bold text-slate-900 focus:outline-none">
+                        </div>
+                        <button onclick="studentJoinLiveRoom()" class="w-full btn-coral font-extrabold py-3.5 rounded-2xl text-sm shadow-lg flex items-center justify-center space-x-2">
+                            <span>Enter Live Session</span><span>⚡</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- LOWER CREAM SECTION: "Choose a game mode" + "Featured Quizzes" -->
+        <section id="featured-section" class="max-w-7xl mx-auto w-full px-4 md:px-10 py-10 space-y-10">
+            
+            <!-- ROW 1: "Choose a game mode" (The Exact 4 Color Blocks from Your Template) -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Choose a game mode</h2>
+                    <button onclick="openInstructorGate()" class="text-sm font-bold text-[#0d47a1] hover:underline">Configure modes →</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- 1. Classic (#0D47A1 Royal Blue) -->
+                    <div onclick="document.getElementById('join-pin-input').focus()" class="palette-card-1 rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer transition transform hover:-translate-y-1 flex items-center space-x-4">
+                        <div class="text-4xl shrink-0">⚡</div>
+                        <div>
+                            <h3 class="font-extrabold text-lg leading-snug">Classic Live</h3>
+                            <p class="text-xs text-white/85 font-medium mt-0.5">Fast-paced classroom questions for everyone</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Team / Auditorium Mode (#EE7758 Coral Salmon) -->
+                    <div onclick="openInstructorGate()" class="palette-card-2 rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer transition transform hover:-translate-y-1 flex items-center space-x-4">
+                        <div class="text-4xl shrink-0">👥</div>
+                        <div>
+                            <h3 class="font-extrabold text-lg leading-snug">Auditorium 150+</h3>
+                            <p class="text-xs text-white/90 font-medium mt-0.5">Work together at scale, score higher</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Challenge / Island Race (#2E944B Forest Green) -->
+                    <div onclick="startSelfPacedQuiz(quizzes[0]?.id || 'cop3337-midterm')" class="palette-card-3 rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer transition transform hover:-translate-y-1 flex items-center space-x-4">
+                        <div class="text-4xl shrink-0">🏆</div>
+                        <div>
+                            <h3 class="font-extrabold text-lg leading-snug">Shahdom Challenge</h3>
+                            <p class="text-xs text-white/90 font-medium mt-0.5">Conquer the Course Island leaderboard</p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Practice (#392282 Deep Indigo Purple) -->
+                    <div onclick="document.getElementById('public-quiz-grid').scrollIntoView({behavior:'smooth'})" class="palette-card-4 rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer transition transform hover:-translate-y-1 flex items-center space-x-4">
+                        <div class="text-4xl shrink-0">📊</div>
+                        <div>
+                            <h3 class="font-extrabold text-lg leading-snug">Self-Paced Practice</h3>
+                            <p class="text-xs text-white/85 font-medium mt-0.5">Learn at your own pace via Canvas links</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: "Featured Quizzes" + Mint Promo Card -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900">Featured Course Realms</h2>
+                    <button onclick="openInstructorGate()" class="text-sm font-bold text-[#0d47a1] hover:underline">+ Add or Import Quiz →</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                    <!-- Dynamic Course Cards (9 Columns) -->
+                    <div id="public-quiz-grid" class="lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+
+                    <!-- Right Mint Promo Card -->
+                    <div class="lg:col-span-3 mint-promo-card rounded-2xl p-6 border border-emerald-900/10 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-[#2e944b]/15 text-[#2e944b] flex items-center justify-center text-2xl font-black">
+                            👑
+                        </div>
+                        <h3 class="text-lg font-extrabold text-slate-900 leading-snug">
+                            Rule the Quiz.<br>Big brighter minds.
+                        </h3>
+                        <p class="text-xs text-slate-600 font-medium">
+                            Switch themes anytime in the top bar or practice any course realm before exam day.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <!-- MAIN CONTAINER FOR OTHER VIEWS (Gate, Admin Studio, Live Host, Student, Island) -->
+    <main id="secondary-views-wrapper" class="hidden flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col">
+
+        <!-- ==========================================
+             VIEW 2: INSTRUCTOR PASSCODE MODAL GATE
+             ========================================== -->
+        <section id="view-pin-gate" class="hidden my-auto max-w-md mx-auto w-full">
+            <div class="bg-white border-2 border-slate-200 rounded-3xl p-8 shadow-2xl text-center space-y-5">
+                <div class="w-16 h-16 bg-blue-50 border border-blue-200 text-[#0d47a1] rounded-2xl flex items-center justify-center text-3xl mx-auto">🔒</div>
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Shahdom Instructor Studio</h2>
+                    <p class="text-sm text-slate-500 mt-1">Safe for classroom podium computers. Your passcode is masked from the projector.</p>
+                </div>
+                <input type="password" id="instructor-pin-input" placeholder="••••" onkeydown="if(event.key==='Enter') verifyInstructorPin()" class="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#0d47a1] rounded-2xl px-4 py-3.5 text-center text-2xl font-mono font-extrabold tracking-widest text-slate-900 focus:outline-none">
+                <p class="text-xs text-slate-400">Default PIN is <code class="font-bold text-slate-600">2026</code> (customizable inside Cloud Config)</p>
+                <div class="flex gap-3">
+                    <button onclick="showView('home')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition">Cancel</button>
+                    <button onclick="verifyInstructorPin()" class="w-1/2 btn-coral font-bold py-3 rounded-xl transition shadow-md">Unlock Studio</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 3: INSTRUCTOR STUDIO
+             ========================================== -->
+        <section id="view-admin" class="hidden space-y-8">
+            <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-lg flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div>
+                    <span class="bg-blue-100 text-[#0d47a1] text-xs font-extrabold px-3 py-1 rounded-full uppercase">Dr. Kiavash Bahreini • Shahdom Studio</span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1">Quiz Bank, Visual Builder & Live Launcher</h2>
+                </div>
+
+                <!-- DUAL DATABASE ENGINE SWITCHER -->
+                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+                    <div class="bg-slate-100 border-2 border-slate-300 p-2 rounded-2xl flex items-center space-x-2">
+                        <span class="text-xs font-extrabold text-slate-700 pl-2">LIVE ENGINE:</span>
+                        <select id="admin-engine-select" onchange="changeDatabaseEngine(this.value)" class="bg-white text-slate-900 font-extrabold text-xs px-3 py-2 rounded-xl border border-slate-300 focus:outline-none cursor-pointer">
+                            <option value="rtdb">⚡ Engine A: Realtime DB (≤100 Students • Unlimited Clicks)</option>
+                            <option value="firestore">🚀 Engine B: Cloud Firestore (150+ Auditorium Scale)</option>
+                        </select>
+                    </div>
+                    <button onclick="toggleCloudModal(true)" class="bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 font-bold px-4 py-2.5 rounded-2xl text-xs transition">⚙️ Cloud & PIN Config</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Column: Saved Questionnaires -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-md space-y-5">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900">📚 Saved Questionnaires</h3>
+                                <p class="text-xs text-slate-500">Select a quiz to Host Live, Edit, or Copy Student Link</p>
+                            </div>
+                            <button onclick="createNewBlankQuiz()" class="btn-coral text-xs font-extrabold px-3.5 py-2 rounded-xl shadow transition">+ New Quiz</button>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <span class="text-xs font-extrabold text-slate-800 block">Scoring Formula for Live Game</span>
+                                <span class="text-[11px] text-slate-500">Speed bonus or Flat Accuracy</span>
+                            </div>
+                            <select id="host-scoring-mode" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
+                                <option value="speed">⚡ Speed + Accuracy (1000 pts)</option>
+                                <option value="accuracy">🎯 Pure Accuracy (100 pts + Streak)</option>
+                            </select>
+                        </div>
+
+                        <div id="admin-quiz-list" class="space-y-3 max-h-[460px] overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <!-- 1-Click JSON Bulk Importer -->
+                    <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-md space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-extrabold text-slate-900">⚡ 1-Click JSON Bulk Import / Backup</h3>
+                            <button onclick="exportAllQuizzesJSON()" class="text-xs font-bold text-[#0d47a1] hover:underline">Download Backup JSON</button>
+                        </div>
+                        <p class="text-xs text-slate-500">Paste a quiz JSON generated by Gemini (or a full backup file) and click <strong>Pop It In!</strong></p>
+                        <textarea id="json-bulk-input" rows="4" placeholder='{"id":"cop3337-midterm","course":"COP3337","title":"Midterm Review","questions":[{"q":"What is polymorphism?","code":"","image":"","time":25,"choices":["A","B","C","D"],"correct":1,"explanation":"..."}]}' class="w-full bg-slate-900 text-emerald-300 font-mono text-xs p-3.5 rounded-2xl border border-slate-700 focus:outline-none"></textarea>
+                        <button onclick="importBulkJSON()" class="w-full palette-card-4 hover:opacity-95 text-white font-extrabold py-3 rounded-2xl text-sm shadow-md transition">📥 Pop It In! (Import Questionnaire)</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Visual Question Editor -->
+                <div class="lg:col-span-7 bg-white border-2 border-slate-200 rounded-3xl p-6 shadow-md space-y-6">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="text-xs font-extrabold text-[#0d47a1] uppercase">Visual Quiz Creator</span>
+                            <h3 class="text-xl font-extrabold text-slate-900">Editing Questionnaire</h3>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="addQuestionToEditor()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold px-4 py-2 rounded-xl text-xs transition">+ Add Question</button>
+                            <button onclick="saveCurrentEditedQuiz()" class="palette-card-3 hover:opacity-95 text-white font-extrabold px-5 py-2 rounded-xl text-xs shadow-md transition">💾 Save Quiz to Cloud</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Course Code</label>
+                            <input type="text" id="edit-quiz-course" placeholder="e.g. COP3337" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold text-slate-900">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Questionnaire Title</label>
+                            <input type="text" id="edit-quiz-title" placeholder="e.g. Midterm Exam Review Session" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold text-slate-900">
+                        </div>
+                    </div>
+
+                    <div id="editor-q-tabs" class="flex flex-wrap gap-2 pt-1"></div>
+
+                    <div id="editor-q-form" class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span id="editor-q-badge" class="bg-slate-900 text-white text-xs font-extrabold px-3 py-1 rounded-lg">Question 1</span>
+                            <div class="flex items-center space-x-3">
+                                <label class="text-xs font-bold text-slate-600">Timer (sec):</label>
+                                <input type="number" id="edit-q-time" min="5" max="180" value="25" class="w-20 bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-sm font-bold text-center">
+                                <button onclick="deleteCurrentQuestion()" class="text-xs font-bold text-rose-600 hover:underline">Delete Q</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Question Prompt</label>
+                            <input type="text" id="edit-q-prompt" placeholder="Type your question here..." class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-base font-bold text-slate-900">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Optional Code Snippet (Java/Python/C/SQL)</label>
+                                <textarea id="edit-q-code" rows="3" placeholder="for(int i=0; i<n; i++) { ... }" class="w-full bg-slate-900 text-amber-300 font-mono text-xs p-3 rounded-xl border border-slate-700"></textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-slate-700">Optional Graphic / Image URL or Upload</label>
+                                <input type="text" id="edit-q-image" placeholder="Paste Image URL or upload below..." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <label class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition inline-block">
+                                        <span>🖼️ Upload & Auto-Compress Image</span>
+                                        <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                                    </label>
+                                    <button onclick="document.getElementById('edit-q-image').value=''; previewEditorImage();" class="text-xs text-slate-500 hover:text-rose-600 font-bold">Clear</button>
+                                </div>
+                                <img id="edit-q-img-preview" src="" alt="Preview" class="hidden h-20 rounded-lg border border-slate-300 object-contain bg-white p-1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-bold text-slate-700">Answer Choices (Select the radio button next to the CORRECT answer)</label>
+                                <button onclick="setTrueFalsePreset()" class="text-xs font-extrabold text-[#0d47a1] hover:underline">Set as Yes/No or True/False</button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="flex items-center bg-blue-50 border-2 border-blue-200 rounded-xl p-2.5 space-x-2">
+                                    <input type="radio" name="edit-correct-choice" value="0" checked class="w-4 h-4 cursor-pointer">
+                                    <span class="font-black text-[#0d47a1] text-sm">A</span>
+                                    <input type="text" id="edit-choice-0" placeholder="Choice A" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold">
+                                </div>
+                                <div class="flex items-center bg-orange-50 border-2 border-orange-200 rounded-xl p-2.5 space-x-2">
+                                    <input type="radio" name="edit-correct-choice" value="1" class="w-4 h-4 cursor-pointer">
+                                    <span class="font-black text-[#ee7758] text-sm">B</span>
+                                    <input type="text" id="edit-choice-1" placeholder="Choice B" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold">
+                                </div>
+                                <div class="flex items-center bg-emerald-50 border-2 border-emerald-200 rounded-xl p-2.5 space-x-2">
+                                    <input type="radio" name="edit-correct-choice" value="2" class="w-4 h-4 cursor-pointer">
+                                    <span class="font-black text-[#2e944b] text-sm">C</span>
+                                    <input type="text" id="edit-choice-2" placeholder="Choice C (Optional)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold">
+                                </div>
+                                <div class="flex items-center bg-purple-50 border-2 border-purple-200 rounded-xl p-2.5 space-x-2">
+                                    <input type="radio" name="edit-correct-choice" value="3" class="w-4 h-4 cursor-pointer">
+                                    <span class="font-black text-[#392282] text-sm">D</span>
+                                    <input type="text" id="edit-choice-3" placeholder="Choice D (Optional)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Explanation (Shown after the bar chart reveals the answer)</label>
+                            <input type="text" id="edit-q-explanation" placeholder="Why is this answer correct?" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-700">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 4: LIVE HOST PROJECTOR BOARD
+             ========================================== -->
+        <section id="view-host" class="hidden space-y-6 my-auto">
+            <div class="bg-white border-2 border-slate-200 rounded-3xl p-5 md:p-6 shadow-xl flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="palette-card-1 font-black px-4 py-2 rounded-2xl text-sm uppercase tracking-wider" id="host-course-tag">COP3337</div>
+                    <div>
+                        <h2 id="host-quiz-title" class="text-xl md:text-2xl font-extrabold text-slate-900">Midterm Review Session</h2>
+                        <p id="host-engine-label" class="text-xs font-bold text-emerald-700">Engine: Realtime DB</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-6 bg-[#062b61] text-white px-6 py-3 rounded-2xl shadow-lg">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-widest text-sky-200 block">Join Shahdom Live at:</span>
+                        <span id="host-url-hint" class="text-xs font-mono text-amber-300">kiavashbahreini7.github.io/shahdom</span>
+                    </div>
+                    <div class="border-l border-white/20 pl-6">
+                        <span class="text-xs font-bold text-[#eb6e4b] uppercase block">Game PIN</span>
+                        <span id="host-pin-number" class="text-3xl md:text-4xl font-mono font-black tracking-widest text-white">----</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOST LOBBY -->
+            <div id="host-stage-lobby" class="bg-white border-2 border-slate-200 rounded-3xl p-8 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-4 flex flex-col items-center text-center space-y-3 border-b lg:border-b-0 lg:border-r border-slate-200 pb-6 lg:pb-0 lg:pr-6">
+                    <div class="bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-md">
+                        <img id="host-qr-img" src="" alt="Scan to Join" class="w-48 h-48 object-contain">
+                    </div>
+                    <p class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">📱 Scan QR with Phone Camera to Enter Shahdom</p>
+                </div>
+
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
+                            <h3 class="text-2xl font-extrabold text-slate-900">Challengers in Lobby: <span id="lobby-player-count" class="text-[#0d47a1]">0</span></h3>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button onclick="addSimulatedStudents(5)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">+5 Demo Students</button>
+                            <button onclick="hostStartQuestion(0)" class="btn-coral font-extrabold px-8 py-3.5 rounded-2xl text-base shadow-lg transition">Start Question 1 →</button>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-400 font-semibold">💡 Click any student name badge below to remove an inappropriate nickname from the board.</p>
+                    <div id="lobby-players-grid" class="flex flex-wrap gap-2.5 min-h-[160px] max-h-[280px] overflow-y-auto p-4 bg-slate-50 rounded-2xl border border-slate-200"></div>
+                </div>
+            </div>
+
+            <!-- ACTIVE QUESTION & BAR CHART BOARD -->
+            <div id="host-stage-question" class="hidden bg-white border-2 border-slate-200 rounded-3xl p-6 md:p-10 shadow-xl space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-4">
+                    <span id="host-q-index-badge" class="bg-[#062b61] text-white font-extrabold px-4 py-1.5 rounded-xl text-sm">Question 1 of 5</span>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-blue-50 border-2 border-blue-200 px-5 py-2 rounded-2xl text-center">
+                            <span class="text-[11px] font-extrabold text-[#0d47a1] uppercase block">Time Remaining</span>
+                            <span id="host-timer-seconds" class="text-2xl font-mono font-black text-slate-900">25s</span>
+                        </div>
+                        <div class="bg-emerald-50 border-2 border-emerald-200 px-5 py-2 rounded-2xl text-center">
+                            <span class="text-[11px] font-extrabold text-emerald-700 uppercase block">Answers Locked</span>
+                            <span id="host-answers-counter" class="text-2xl font-mono font-black text-emerald-900">0 / 0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <button onclick="hostAddExtraTime(15)" id="btn-host-addtime" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold px-4 py-2.5 rounded-xl text-xs transition">+15s</button>
+                        <button onclick="hostRevealResults()" id="btn-host-reveal" class="btn-coral font-extrabold px-5 py-2.5 rounded-xl text-xs shadow transition">📊 Reveal Bar Chart</button>
+                        <button onclick="hostAdvanceNext()" id="btn-host-next" class="hidden palette-card-1 font-extrabold px-6 py-2.5 rounded-xl text-sm shadow-lg transition">Next →</button>
+                    </div>
+                </div>
+
+                <div class="text-center space-y-4 py-2">
+                    <h3 id="host-q-prompt-text" class="text-2xl md:text-4xl font-extrabold text-slate-900 leading-snug max-w-4xl mx-auto">Question text goes here?</h3>
+                    <pre id="host-q-code-block" class="hidden bg-slate-900 text-emerald-300 font-mono text-sm md:text-base p-5 rounded-2xl text-left max-w-3xl mx-auto overflow-x-auto shadow-inner border border-slate-700"></pre>
+                    <img id="host-q-image-box" src="" alt="Question Diagram" class="hidden max-h-60 mx-auto rounded-2xl border-2 border-slate-200 shadow-sm object-contain bg-white p-2">
+                </div>
+
+                <div id="host-barchart-area" class="hidden bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-4">
+                    <h4 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider text-center">Class Response Distribution</h4>
+                    <div id="host-bars-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end h-44 pt-6 px-4"></div>
+                    <div id="host-explanation-banner" class="bg-blue-50 border border-blue-200 text-blue-900 p-4 rounded-xl text-sm font-semibold text-center"></div>
+                </div>
+
+                <div id="host-choices-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"></div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 5: STUDENT LIVE CONTROLLER & SELF-PACED PLAYER
+             ========================================== -->
+        <section id="view-student" class="hidden max-w-2xl mx-auto w-full my-auto space-y-6">
+            <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                    <div>
+                        <span id="student-mode-pill" class="bg-blue-100 text-[#0d47a1] text-xs font-extrabold px-3 py-1 rounded-full uppercase">Shahdom Live Mode</span>
+                        <h3 id="student-player-label" class="text-lg font-extrabold text-slate-900 mt-1">Challenger</h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold text-slate-400 uppercase block">Total Score</span>
+                        <span id="student-score-badge" class="text-2xl font-mono font-black text-[#eb6e4b]">0 pts</span>
+                    </div>
+                </div>
+
+                <div id="student-q-wrapper" class="space-y-4 text-center py-2">
+                    <div class="flex justify-between items-center text-xs font-extrabold text-slate-500">
+                        <span id="student-q-num">Waiting for Instructor...</span>
+                        <span id="student-q-timer" class="text-[#0d47a1] font-mono text-sm"></span>
+                    </div>
+                    <h2 id="student-q-prompt" class="text-xl md:text-2xl font-extrabold text-slate-900 leading-snug">You're in! Eyes on the board or wait for Question 1 to appear right here.</h2>
+                    <pre id="student-q-code" class="hidden bg-slate-900 text-emerald-300 font-mono text-xs p-4 rounded-2xl text-left overflow-x-auto"></pre>
+                    <img id="student-q-img" src="" class="hidden max-h-48 mx-auto rounded-xl border border-slate-200 object-contain">
+                </div>
+
+                <div id="student-buttons-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                <div id="student-feedback-box" class="hidden p-5 rounded-2xl text-center space-y-3"></div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 6: THE COURSE ISLAND FINALE & CLASS COMPARISON
+             ========================================== -->
+        <section id="view-island" class="hidden space-y-8 my-auto">
+            <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 md:p-10 shadow-2xl space-y-8">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-6">
+                    <div>
+                        <span id="island-course-badge" class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3.5 py-1.5 rounded-full uppercase">Shahdom Expedition Complete</span>
+                        <h2 id="island-main-title" class="text-3xl md:text-4xl font-extrabold text-slate-900 mt-2">Welcome to the Shahdom Course Island! 🏝️</h2>
+                        <p class="text-slate-600 text-sm font-medium mt-1">See how far you and the class progressed across the royal landmarks.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="exportScoresCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold px-4 py-2.5 rounded-xl text-xs transition flex items-center space-x-1.5">
+                            <span>📊</span><span>Export Canvas CSV</span>
+                        </button>
+                        <button onclick="retakeCurrentSelfPaced()" id="btn-retake-quiz" class="hidden btn-coral font-extrabold px-5 py-2.5 rounded-xl text-xs shadow transition">🔄 Practice Again</button>
+                        <button onclick="showView('home')" class="bg-[#062b61] hover:opacity-95 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs shadow transition">Back to Home</button>
+                    </div>
+                </div>
+
+                <!-- INTERACTIVE SVG COURSE ISLAND MAP -->
+                <div class="bg-gradient-to-b from-[#062b61] via-[#0a4da6] to-teal-900 border-2 border-slate-300 rounded-3xl p-4 md:p-6 relative overflow-hidden shadow-inner text-white">
+                    <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                        <span class="text-xs font-extrabold text-sky-200 uppercase tracking-wider">🧭 Shahdom Island Expedition Map (0% → 100% Mastery)</span>
+                        <span id="island-accuracy-pill" class="bg-[#eb6e4b] text-white font-extrabold text-xs px-3.5 py-1 rounded-full shadow-sm">Class Mastery: 85%</span>
+                    </div>
+
+                    <svg viewBox="0 0 900 300" class="w-full h-auto drop-shadow-md">
+                        <path d="M 0 260 Q 150 245 300 260 T 600 260 T 900 260 L 900 300 L 0 300 Z" fill="#34d399" opacity="0.35"/>
+                        <path d="M 70 250 C 90 170, 190 150, 270 175 C 340 120, 460 110, 550 155 C 630 95, 740 65, 830 250 Z" fill="#fde68a" stroke="#eb6e4b" stroke-width="4"/>
+                        <path d="M 105 245 C 140 185, 220 170, 290 190 C 360 140, 460 135, 555 170 C 635 110, 725 90, 800 245 Z" fill="#2e944b"/>
+                        <polygon points="685,122 725,55 765,122" fill="#392282" stroke="#fde68a" stroke-width="3"/>
+                        <polygon points="710,80 725,55 740,80" fill="#ffffff"/>
+
+                        <path d="M 130 225 Q 210 190 285 205 T 450 175 T 605 165 T 725 75" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="10 8" stroke-linecap="round"/>
+
+                        <circle cx="130" cy="225" r="12" fill="#ffffff" stroke="#0d47a1" stroke-width="4"/>
+                        <text x="130" y="255" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">1. Foundations Cove</text>
+
+                        <circle cx="285" cy="205" r="12" fill="#ffffff" stroke="#0d47a1" stroke-width="4"/>
+                        <text x="285" y="235" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">2. Logic Lagoon</text>
+
+                        <circle cx="450" cy="175" r="12" fill="#ffffff" stroke="#0d47a1" stroke-width="4"/>
+                        <text x="450" y="205" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">3. Algorithm Ridge</text>
+
+                        <circle cx="605" cy="165" r="12" fill="#ffffff" stroke="#0d47a1" stroke-width="4"/>
+                        <text x="605" y="195" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">4. Architecture Fort</text>
+
+                        <circle cx="725" cy="75" r="14" fill="#fbbf24" stroke="#eb6e4b" stroke-width="4"/>
+                        <text x="725" y="42" text-anchor="middle" font-size="13" font-weight="900" fill="#fef08a">👑 5. Shahdom Mastery Peak</text>
+
+                        <g id="island-player-pin" class="island-avatar" transform="translate(130, 195)">
+                            <rect x="-46" y="-34" width="92" height="26" rx="8" fill="#eb6e4b"/>
+                            <text id="island-pin-label" x="0" y="-17" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff">YOU (85%)</text>
+                            <circle cx="0" cy="0" r="9" fill="#ffffff" stroke="#062b61" stroke-width="3"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="text-lg font-extrabold text-slate-900">📈 Performance & Percentile Summary</h3>
+                        <div id="island-stats-box" class="space-y-3 text-sm font-semibold text-slate-700"></div>
+                    </div>
+
+                    <div class="lg:col-span-7 bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="text-lg font-extrabold text-slate-900">🏅 Shahdom Leaderboard (Top Conquerors)</h3>
+                        <div id="island-leaderboard-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: CLOUD CONFIG & INSTRUCTOR PIN SETUP -->
+    <div id="modal-cloud-config" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-2 border-slate-200 rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xl font-extrabold text-slate-900">⚙️ Shahdom Firebase Dual-Engine & Passcode Setup</h3>
+                <button onclick="toggleCloudModal(false)" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Paste your <code class="font-bold text-[#0d47a1]">firebaseConfig</code> object from the Firebase Console below. Once saved, your browser connects to both <strong>Realtime Database</strong> and <strong>Cloud Firestore</strong> automatically.
+            </p>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Firebase Config JSON Object</label>
+                <textarea id="config-json-input" rows="6" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"https://...-default-rtdb.firebaseio.com","projectId":"..."}' class="w-full bg-slate-900 text-emerald-300 font-mono text-xs p-3.5 rounded-2xl border border-slate-700"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Instructor Studio Passcode (Masked on Podium PCs)</label>
+                <input type="password" id="config-new-pin" value="2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-sm font-bold">
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="toggleCloudModal(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs">Close</button>
+                <button onclick="saveCloudConfigFromUI()" class="btn-coral font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-md">Save & Connect Cloud</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /********************************************************************
+         * 1. OPTIONAL HARDCODED FIREBASE CONFIG (FOR FIU PODIUM COMPUTERS)
+         ********************************************************************/
+        const DEFAULT_FIREBASE_CONFIG = {
+            apiKey: "AizaSyC-4ro73PB_PoF4tde-hUicOb-tNCMhBzA",
+            authDomain: "shahdom.firebaseapp.com",
+            databaseURL: "https://shahdom-default-rtdb.firebaseio.com",
+            projectId: "shahdom",
+            storageBucket: "shahdom.appspot.com",
+            messagingSenderId: "270316720463",
+            appId: "1:270316720463:web:7e16affc230b2c1522f53a"
+        };
+
+        const STARTER_QUIZZES = [
+            {
+                id: "cop3337-midterm",
+                course: "COP3337",
+                title: "Intermediate Programming (Java OOP)",
+                plays: "12.4K",
+                icon: "☕",
+                questions: [
+                    {
+                        q: "Which OOP concept allows a subclass to provide a specific implementation of a method already defined in its parent class?",
+                        code: "class Animal { void speak() {} }\nclass Dog extends Animal {\n    @Override void speak() { System.out.println(\"Bark\"); }\n}",
+                        image: "",
+                        time: 25,
+                        choices: ["Encapsulation", "Method Overriding (Polymorphism)", "Method Overloading", "Static Binding"],
+                        correct: 1,
+                        explanation: "Method overriding is runtime polymorphism where a subclass redefines an inherited method with the exact same signature."
+                    },
+                    {
+                        q: "What is the worst-case time complexity of inserting an element at the end of a standard Java ArrayList when no resize is needed?",
+                        code: "",
+                        image: "",
+                        time: 20,
+                        choices: ["O(1) Constant Time", "O(log N) Logarithmic", "O(N) Linear Time", "O(N^2) Quadratic"],
+                        correct: 0,
+                        explanation: "Appending to an ArrayList with available capacity is O(1) amortized constant time."
+                    },
+                    {
+                        q: "Can an abstract class in Java contain both abstract methods and concrete (implemented) methods?",
+                        code: "",
+                        image: "",
+                        time: 15,
+                        choices: ["Yes", "No"],
+                        correct: 0,
+                        explanation: "Yes! Abstract classes can mix abstract method declarations with fully implemented methods."
+                    }
+                ]
+            },
+            {
+                id: "cot3541-logic",
+                course: "COT3541",
+                title: "Logic for Computer Science",
+                plays: "9.8K",
+                icon: "⚛️",
+                questions: [
+                    {
+                        q: "Which of the following is logically equivalent to the implication P → Q?",
+                        code: "Truth Table Check: When is (P -> Q) false?",
+                        image: "",
+                        time: 25,
+                        choices: ["¬P ∨ Q", "P ∧ ¬Q", "¬Q → ¬P (Both A and C)", "P ↔ Q"],
+                        correct: 2,
+                        explanation: "Both ¬P ∨ Q (Material Implication) and ¬Q → ¬P (Contrapositive) are logically equivalent to P → Q."
+                    },
+                    {
+                        q: "A compound proposition that is ALWAYS true regardless of the truth values of its propositional variables is called a:",
+                        code: "",
+                        image: "",
+                        time: 20,
+                        choices: ["Contradiction", "Contingency", "Tautology", "Syllogism"],
+                        correct: 2,
+                        explanation: "A tautology (such as P ∨ ¬P) evaluates to True under every possible truth assignment."
+                    }
+                ]
+            },
+            {
+                id: "cop4751-sql",
+                course: "COP4751",
+                title: "Advanced Database Management",
+                plays: "18.1K",
+                icon: "🗄️",
+                questions: [
+                    {
+                        q: "Which normal form eliminates transitive functional dependencies of non-prime attributes on the primary key?",
+                        code: "StudentID -> DeptID -> DeptLocation",
+                        image: "",
+                        time: 25,
+                        choices: ["First Normal Form (1NF)", "Second Normal Form (2NF)", "Third Normal Form (3NF)", "Unnormalized Form"],
+                        correct: 2,
+                        explanation: "3NF requires the relation to be in 2NF and have no transitive dependencies."
+                    },
+                    {
+                        q: "In SQL execution order, which clause filters groups AFTER the GROUP BY aggregation has been performed?",
+                        code: "SELECT dept_id, AVG(salary)\nFROM employees\nGROUP BY dept_id\n_______ AVG(salary) > 85000;",
+                        image: "",
+                        time: 20,
+                        choices: ["WHERE", "HAVING", "ORDER BY", "DISTINCT"],
+                        correct: 1,
+                        explanation: "WHERE filters rows before grouping, whereas HAVING filters aggregated groups after GROUP BY."
+                    }
+                ]
+            }
+        ];
+
+        // Global State
+        let quizzes = [];
+        let activeTheme = localStorage.getItem('shahdom_color_theme') || 'royal'; // 'royal' or 'daylight'
+        let activeEngine = localStorage.getItem('shahdom_quiz_engine') || 'rtdb';
+        let instructorPin = localStorage.getItem('shahdom_instructor_pin') || '2026';
+        let fbApp = null, dbRT = null, dbFS = null, isCloudConnected = false;
+
+        let editingQuizIndex = 0, editingQuestionIndex = 0;
+        let currentRoomPin = null, activeQuizObj = null, activeQIdx = 0;
+        let timerInterval = null, timeRemaining = 0;
+        let hostPlayers = {}, currentQuestionAnswers = {};
+
+        let myPlayerId = localStorage.getItem('shahdom_student_uid') || ('stu_' + Math.random().toString(36).substring(2, 9));
+        localStorage.setItem('shahdom_student_uid', myPlayerId);
+        let myPlayerName = localStorage.getItem('shahdom_student_name') || '';
+        let myScore = 0, myStreak = 0, isSelfPacedMode = false;
+        let selfPacedQuiz = null, selfPacedQIdx = 0, selfPacedCorrectCount = 0;
+
+        /********************************************************************
+         * 2. THEME SWITCHER & INITIALIZATION
+         ********************************************************************/
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme(activeTheme);
+            loadLocalQuizzes();
+            initFirebaseConnection();
+            document.getElementById('admin-engine-select').value = activeEngine;
+            updateEngineStatusPill();
+            renderPublicQuizCards();
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('pin')) document.getElementById('join-pin-input').value = params.get('pin');
+            if (params.get('quiz')) setTimeout(() => startSelfPacedQuiz(params.get('quiz')), 400);
+        });
+
+        function toggleColorTheme() {
+            activeTheme = (activeTheme === 'royal') ? 'daylight' : 'royal';
+            localStorage.setItem('shahdom_color_theme', activeTheme);
+            applyTheme(activeTheme);
+        }
+
+        function applyTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            const label = document.getElementById('theme-toggle-label');
+            const icon = document.getElementById('theme-toggle-icon');
+            if (themeName === 'royal') {
+                label.innerText = 'Theme: Royal Twilight';
+                icon.innerText = '🌌';
+            } else {
+                label.innerText = 'Theme: Classic Daylight';
+                icon.innerText = '☀️';
+            }
+        }
+
+        function loadLocalQuizzes() {
+            const saved = localStorage.getItem('shahdom_quizzes_bank');
+            if (saved) {
+                try { quizzes = JSON.parse(saved); } catch (e) { quizzes = [...STARTER_QUIZZES]; }
+            } else {
+                quizzes = JSON.parse(JSON.stringify(STARTER_QUIZZES));
+                localStorage.setItem('shahdom_quizzes_bank', JSON.stringify(quizzes));
+            }
+        }
+
+        function initFirebaseConnection() {
+            let cfg = DEFAULT_FIREBASE_CONFIG;
+            const savedCfg = localStorage.getItem('shahdom_firebase_config');
+            if (savedCfg) {
+                try { cfg = JSON.parse(savedCfg); } catch (e) {}
+            }
+            if (cfg && cfg.apiKey && cfg.projectId) {
+                try {
+                    fbApp = !firebase.apps.length ? firebase.initializeApp(cfg) : firebase.app();
+                    if (cfg.databaseURL) dbRT = firebase.database();
+                    dbFS = firebase.firestore();
+                    firebase.auth().signInAnonymously().catch(() => {});
+                    isCloudConnected = true;
+                    syncQuizzesFromCloud();
+                } catch (err) {
+                    isCloudConnected = false;
+                }
+            }
+            updateEngineStatusPill();
+        }
+
+        function updateEngineStatusPill() {
+            const dot = document.getElementById('cloud-dot');
+            const txt = document.getElementById('cloud-status-text');
+            if (isCloudConnected) {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                txt.innerText = activeEngine === 'rtdb' ? 'Cloud: RTDB' : 'Cloud: Firestore';
+            } else {
+                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+                txt.innerText = 'Demo Mode';
+            }
+        }
+
+        function changeDatabaseEngine(newEngine) {
+            activeEngine = newEngine;
+            localStorage.setItem('shahdom_quiz_engine', activeEngine);
+            updateEngineStatusPill();
+        }
+
+        async function syncQuizzesFromCloud() {
+            if (!isCloudConnected || !dbFS) return;
+            try {
+                const doc = await dbFS.collection('shahdom_system').doc('quiz_bank').get();
+                if (doc.exists && doc.data().quizzes) {
+                    quizzes = doc.data().quizzes;
+                    localStorage.setItem('shahdom_quizzes_bank', JSON.stringify(quizzes));
+                    renderPublicQuizCards();
+                }
+            } catch (e) {}
+        }
+
+        async function pushQuizzesToCloud() {
+            localStorage.setItem('shahdom_quizzes_bank', JSON.stringify(quizzes));
+            renderPublicQuizCards();
+            if (!isCloudConnected) return;
+            try {
+                if (dbFS) await dbFS.collection('shahdom_system').doc('quiz_bank').set({ quizzes, updatedAt: Date.now() });
+                if (dbRT) await dbRT.ref('quizzes').set(quizzes);
+            } catch (e) {}
+        }
+
+        /********************************************************************
+         * 3. VIEW NAVIGATION
+         ********************************************************************/
+        function showView(viewId) {
+            const homeEl = document.getElementById('view-home');
+            const secWrapper = document.getElementById('secondary-views-wrapper');
+            ['pin-gate', 'admin', 'host', 'student', 'island'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+
+            if (viewId === 'home') {
+                secWrapper.classList.add('hidden');
+                homeEl.classList.remove('hidden');
+            } else {
+                homeEl.classList.add('hidden');
+                secWrapper.classList.remove('hidden');
+                document.getElementById('view-' + viewId).classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openInstructorGate() {
+            if (sessionStorage.getItem('shahdom_instructor_unlocked') === 'true') {
+                openAdminStudio();
+            } else {
+                document.getElementById('instructor-pin-input').value = '';
+                showView('pin-gate');
+                setTimeout(() => document.getElementById('instructor-pin-input').focus(), 100);
+            }
+        }
+
+        function verifyInstructorPin() {
+            if (document.getElementById('instructor-pin-input').value.trim() === instructorPin) {
+                sessionStorage.setItem('shahdom_instructor_unlocked', 'true');
+                openAdminStudio();
+            } else {
+                alert('Incorrect Instructor Passcode. (Default is 2026)');
+            }
+        }
+
+        function openAdminStudio() {
+            showView('admin');
+            renderAdminQuizList();
+            loadQuizIntoEditor(0);
+        }
+
+        function toggleCloudModal(show) {
+            const modal = document.getElementById('modal-cloud-config');
+            if (show) {
+                document.getElementById('config-json-input').value = localStorage.getItem('shahdom_firebase_config') || '';
+                document.getElementById('config-new-pin').value = instructorPin;
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function saveCloudConfigFromUI() {
+            const raw = document.getElementById('config-json-input').value.trim();
+            instructorPin = document.getElementById('config-new-pin').value.trim() || '2026';
+            localStorage.setItem('shahdom_instructor_pin', instructorPin);
+            if (raw) {
+                try {
+                    const cleaned = raw.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+                    const parsed = JSON.parse(cleaned);
+                    localStorage.setItem('shahdom_firebase_config', JSON.stringify(parsed, null, 2));
+                    initFirebaseConnection();
+                    alert('✅ Shahdom Cloud Configuration & Instructor PIN saved!');
+                } catch (e) {
+                    alert('Invalid JSON format.');
+                    return;
+                }
+            }
+            toggleCloudModal(false);
+        }
+
+        /********************************************************************
+         * 4. FEATURED QUIZZES CARDS
+         ********************************************************************/
+        function renderPublicQuizCards(filterText = '') {
+            const container = document.getElementById('public-quiz-grid');
+            const thumbColors = ['palette-card-1', 'palette-card-2', 'palette-card-3', 'palette-card-4'];
+            const icons = ['☕', '⚛️', '🗄️', '🤖'];
+            const qFilter = filterText.trim().toLowerCase();
+
+            const filtered = quizzes.filter(qz =>
+                !qFilter ||
+                qz.course.toLowerCase().includes(qFilter) ||
+                qz.title.toLowerCase().includes(qFilter)
+            );
+
+            container.innerHTML = filtered.map((qz, idx) => {
+                const colorCls = thumbColors[idx % thumbColors.length];
+                const icon = qz.icon || icons[idx % icons.length];
+                const plays = qz.plays || `${(idx + 2) * 3.2}K`;
+                return `
+                <div onclick="startSelfPacedQuiz('${qz.id}')" class="bg-white hover:border-[#0d47a1] border-2 border-slate-200/80 rounded-2xl p-4 shadow-sm hover:shadow-lg transition cursor-pointer flex items-center space-x-4 group">
+                    <div class="${colorCls} w-20 h-20 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-inner">
+                        <span class="text-2xl">${icon}</span>
+                        <span class="text-[10px] font-black tracking-wider uppercase mt-1">${escapeHtml(qz.course)}</span>
+                    </div>
+                    <div class="min-w-0 flex-1 space-y-1">
+                        <h4 class="font-extrabold text-slate-900 group-hover:text-[#0d47a1] transition truncate text-base">${escapeHtml(qz.title)}</h4>
+                        <p class="text-xs text-slate-500 font-semibold">${qz.questions.length} questions • ${escapeHtml(qz.course)}</p>
+                        <div class="flex items-center space-x-1 text-xs font-extrabold text-[#2e944b] pt-0.5">
+                            <span>▶</span>
+                            <span>${plays} plays • Enter Realm</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        /********************************************************************
+         * 5. VISUAL QUIZ EDITOR & JSON IMPORTER
+         ********************************************************************/
+        function renderAdminQuizList() {
+            const list = document.getElementById('admin-quiz-list');
+            list.innerHTML = quizzes.map((qz, idx) => `
+                <div class="p-4 rounded-2xl border-2 ${idx === editingQuizIndex ? 'border-[#0d47a1] bg-blue-50/40' : 'border-slate-200 bg-slate-50'} flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-white border border-slate-300 text-slate-800 text-[11px] font-extrabold px-2.5 py-0.5 rounded-md">${escapeHtml(qz.course)}</span>
+                            <h4 class="font-extrabold text-slate-900 text-sm mt-1">${escapeHtml(qz.title)}</h4>
+                            <span class="text-xs text-slate-500 font-semibold">${qz.questions.length} Questions</span>
+                        </div>
+                        <button onclick="loadQuizIntoEditor(${idx})" class="text-xs font-extrabold text-[#0d47a1] hover:underline">✏️ Edit</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button onclick="hostLaunchLiveRoom(${idx})" class="flex-1 palette-card-3 hover:opacity-95 text-white font-extrabold py-2 px-3 rounded-xl text-xs shadow transition">
+                            🎯 Host Live Class
+                        </button>
+                        <button onclick="copyCanvasSelfPacedLink('${qz.id}')" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold py-2 px-3 rounded-xl text-xs transition">
+                            🔗 Copy Canvas URL
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyCanvasSelfPacedLink(quizId) {
+            const fullLink = `${window.location.origin}${window.location.pathname}?quiz=${encodeURIComponent(quizId)}`;
+            navigator.clipboard.writeText(fullLink).then(() => {
+                alert(`✅ Individual Self-Paced Canvas URL copied!\n\n${fullLink}`);
+            });
+        }
+
+        function loadQuizIntoEditor(qIdx) {
+            editingQuizIndex = qIdx;
+            editingQuestionIndex = 0;
+            const qz = quizzes[editingQuizIndex];
+            document.getElementById('edit-quiz-course').value = qz.course;
+            document.getElementById('edit-quiz-title').value = qz.title;
+            renderAdminQuizList();
+            renderEditorQuestionTabs();
+            loadQuestionIntoForm(0);
+        }
+
+        function renderEditorQuestionTabs() {
+            const qz = quizzes[editingQuizIndex];
+            document.getElementById('editor-q-tabs').innerHTML = qz.questions.map((_, i) => `
+                <button onclick="saveCurrentQuestionFromForm(); loadQuestionIntoForm(${i});" class="px-3.5 py-1.5 rounded-xl font-extrabold text-xs transition ${i === editingQuestionIndex ? 'palette-card-1 shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                    Q${i + 1}
+                </button>
+            `).join('');
+        }
+
+        function loadQuestionIntoForm(questionIdx) {
+            editingQuestionIndex = questionIdx;
+            renderEditorQuestionTabs();
+            const qObj = quizzes[editingQuizIndex].questions[editingQuestionIndex];
+            document.getElementById('editor-q-badge').innerText = `Question ${questionIdx + 1} of ${quizzes[editingQuizIndex].questions.length}`;
+            document.getElementById('edit-q-time').value = qObj.time || 25;
+            document.getElementById('edit-q-prompt').value = qObj.q || '';
+            document.getElementById('edit-q-code').value = qObj.code || '';
+            document.getElementById('edit-q-image').value = qObj.image || '';
+            document.getElementById('edit-q-explanation').value = qObj.explanation || '';
+
+            for (let i = 0; i < 4; i++) {
+                document.getElementById('edit-choice-' + i).value = (qObj.choices && qObj.choices[i]) ? qObj.choices[i] : '';
+            }
+            document.getElementsByName('edit-correct-choice').forEach(r => {
+                r.checked = (parseInt(r.value) === (qObj.correct || 0));
+            });
+            previewEditorImage();
+        }
+
+        function saveCurrentQuestionFromForm() {
+            const qz = quizzes[editingQuizIndex];
+            if (!qz || !qz.questions[editingQuestionIndex]) return;
+            qz.course = document.getElementById('edit-quiz-course').value.trim() || 'COURSE';
+            qz.title = document.getElementById('edit-quiz-title').value.trim() || 'Untitled Quiz';
+
+            const choices = [];
+            for (let i = 0; i < 4; i++) {
+                const val = document.getElementById('edit-choice-' + i).value.trim();
+                if (val !== '' || i < 2) choices.push(val || `Option ${i + 1}`);
+            }
+            let correctIdx = 0;
+            document.getElementsByName('edit-correct-choice').forEach(r => {
+                if (r.checked) correctIdx = parseInt(r.value);
+            });
+            if (correctIdx >= choices.length) correctIdx = 0;
+
+            qz.questions[editingQuestionIndex] = {
+                q: document.getElementById('edit-q-prompt').value.trim() || 'Question Prompt',
+                code: document.getElementById('edit-q-code').value,
+                image: document.getElementById('edit-q-image').value.trim(),
+                time: parseInt(document.getElementById('edit-q-time').value) || 25,
+                choices: choices,
+                correct: correctIdx,
+                explanation: document.getElementById('edit-q-explanation').value.trim()
+            };
+        }
+
+        function saveCurrentEditedQuiz() {
+            saveCurrentQuestionFromForm();
+            pushQuizzesToCloud();
+            renderAdminQuizList();
+            alert('✅ Shahdom Questionnaire saved!');
+        }
+
+        function addQuestionToEditor() {
+            saveCurrentQuestionFromForm();
+            quizzes[editingQuizIndex].questions.push({
+                q: "New Review Question",
+                code: "",
+                image: "",
+                time: 25,
+                choices: ["Option A", "Option B", "Option C", "Option D"],
+                correct: 0,
+                explanation: ""
+            });
+            loadQuestionIntoForm(quizzes[editingQuizIndex].questions.length - 1);
+        }
+
+        function deleteCurrentQuestion() {
+            const qList = quizzes[editingQuizIndex].questions;
+            if (qList.length <= 1) return alert('A questionnaire must have at least 1 question.');
+            qList.splice(editingQuestionIndex, 1);
+            loadQuestionIntoForm(Math.max(0, editingQuestionIndex - 1));
+        }
+
+        function createNewBlankQuiz() {
+            saveCurrentQuestionFromForm();
+            quizzes.unshift({
+                id: 'quiz-' + Date.now().toString().slice(-5),
+                course: "NEW101",
+                title: "New Custom Questionnaire",
+                questions: [{
+                    q: "Sample Question 1?",
+                    code: "",
+                    image: "",
+                    time: 25,
+                    choices: ["Choice A", "Choice B", "Choice C", "Choice D"],
+                    correct: 0,
+                    explanation: ""
+                }]
+            });
+            loadQuizIntoEditor(0);
+        }
+
+        function setTrueFalsePreset() {
+            document.getElementById('edit-choice-0').value = 'Yes / True';
+            document.getElementById('edit-choice-1').value = 'No / False';
+            document.getElementById('edit-choice-2').value = '';
+            document.getElementById('edit-choice-3').value = '';
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 520;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+                    else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    document.getElementById('edit-q-image').value = canvas.toDataURL('image/webp', 0.78);
+                    previewEditorImage();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewEditorImage() {
+            const url = document.getElementById('edit-q-image').value.trim();
+            const preview = document.getElementById('edit-q-img-preview');
+            if (url) { preview.src = url; preview.classList.remove('hidden'); }
+            else { preview.classList.add('hidden'); }
+        }
+
+        function importBulkJSON() {
+            const raw = document.getElementById('json-bulk-input').value.trim();
+            if (!raw) return alert('Paste your JSON questionnaire first.');
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    if (parsed[0] && parsed[0].questions) quizzes = parsed.concat(quizzes);
+                    else quizzes[editingQuizIndex].questions = parsed;
+                } else if (parsed.questions) {
+                    if (!parsed.id) parsed.id = 'quiz-' + Date.now().toString().slice(-4);
+                    quizzes.unshift(parsed);
+                }
+                pushQuizzesToCloud();
+                loadQuizIntoEditor(0);
+                document.getElementById('json-bulk-input').value = '';
+                alert('🎉 Questionnaire imported into Shahdom!');
+            } catch (err) {
+                alert('Invalid JSON syntax.');
+            }
+        }
+
+        function exportAllQuizzesJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(quizzes, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", "shahdom_backup.json");
+            a.click();
+        }
+
+        /********************************************************************
+         * 6. LIVE CLASSROOM HOST ENGINE
+         ********************************************************************/
+        async function hostLaunchLiveRoom(quizIdx) {
+            saveCurrentQuestionFromForm();
+            activeQuizObj = quizzes[quizIdx];
+            activeQIdx = -1;
+            hostPlayers = {};
+            currentQuestionAnswers = {};
+
+            const prefix = activeEngine === 'rtdb' ? (Math.floor(Math.random() * 4) + 1) : (Math.floor(Math.random() * 5) + 5);
+            currentRoomPin = prefix.toString() + Math.floor(100 + Math.random() * 900).toString();
+
+            document.getElementById('host-course-tag').innerText = activeQuizObj.course;
+            document.getElementById('host-quiz-title').innerText = activeQuizObj.title;
+            document.getElementById('host-pin-number').innerText = currentRoomPin;
+            document.getElementById('host-engine-label').innerText = activeEngine === 'rtdb'
+                ? '⚡ Engine A: Realtime DB (≤100 Students)'
+                : '🚀 Engine B: Cloud Firestore (150+ Scale Mode)';
+
+            const joinUrl = `${window.location.origin}${window.location.pathname}?pin=${currentRoomPin}`;
+            document.getElementById('host-url-hint').innerText = (window.location.host && window.location.host !== '')
+                ? (window.location.host + window.location.pathname)
+                : 'kiavashbahreini7.github.io/shahdom';
+            document.getElementById('host-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(joinUrl)}`;
+
+            document.getElementById('host-stage-lobby').classList.remove('hidden');
+            document.getElementById('host-stage-question').classList.add('hidden');
+            showView('host');
+            renderHostLobbyPlayers();
+
+            if (isCloudConnected) {
+                const initialRoomState = {
+                    pin: currentRoomPin, engine: activeEngine, course: activeQuizObj.course,
+                    title: activeQuizObj.title, status: 'lobby', qIdx: -1, createdAt: Date.now()
+                };
+                if (activeEngine === 'rtdb' && dbRT) {
+                    const roomRef = dbRT.ref('rooms/' + currentRoomPin);
+                    await roomRef.set(initialRoomState);
+                    roomRef.child('players').on('value', snap => { hostPlayers = snap.val() || {}; renderHostLobbyPlayers(); });
+                    roomRef.child('answers').on('value', snap => {
+                        const allAns = snap.val() || {};
+                        currentQuestionAnswers = allAns[activeQIdx] || {};
+                        updateHostAnswerCounter();
+                    });
+                } else if (activeEngine === 'firestore' && dbFS) {
+                    const roomDoc = dbFS.collection('rooms').doc(currentRoomPin);
+                    await roomDoc.set(initialRoomState);
+                    roomDoc.collection('players').onSnapshot(snap => {
+                        hostPlayers = {};
+                        snap.forEach(d => { hostPlayers[d.id] = d.data(); });
+                        renderHostLobbyPlayers();
+                    });
+                    roomDoc.collection('answers').onSnapshot(snap => {
+                        currentQuestionAnswers = {};
+                        snap.forEach(d => {
+                            const data = d.data();
+                            if (data.qIdx === activeQIdx) currentQuestionAnswers[data.playerId] = data;
+                        });
+                        updateHostAnswerCounter();
+                    });
+                }
+            }
+        }
+
+        function renderHostLobbyPlayers() {
+            const entries = Object.entries(hostPlayers);
+            document.getElementById('lobby-player-count').innerText = entries.length;
+            const grid = document.getElementById('lobby-players-grid');
+            if (!entries.length) {
+                grid.innerHTML = `<span class="text-slate-400 font-semibold text-sm m-auto">Waiting for students to scan QR or enter PIN ${currentRoomPin}...</span>`;
+                return;
+            }
+            grid.innerHTML = entries.map(([pid, p]) => `
+                <button onclick="kickPlayerFromLobby('${pid}')" class="bg-white hover:bg-rose-50 border-2 border-slate-200 hover:border-rose-300 px-3.5 py-1.5 rounded-xl font-extrabold text-sm text-slate-800 hover:text-rose-700 shadow-sm transition">
+                    👤 ${escapeHtml(p.name)}
+                </button>
+            `).join('');
+        }
+
+        function kickPlayerFromLobby(pid) {
+            delete hostPlayers[pid];
+            renderHostLobbyPlayers();
+        }
+
+        function addSimulatedStudents(count) {
+            const names = ["Alejandro M.", "Sofia R.", "Daniel K.", "Camila V.", "Mateo G.", "Isabella L.", "Lucas P.", "Valentina S."];
+            for (let i = 0; i < count; i++) {
+                const pid = 'sim_' + Math.random().toString(36).substring(2, 7);
+                hostPlayers[pid] = { name: names[Math.floor(Math.random() * names.length)] + ' ' + Math.floor(Math.random() * 90 + 10), score: Math.floor(Math.random() * 600) };
+            }
+            renderHostLobbyPlayers();
+        }
+
+        async function hostStartQuestion(qIdx) {
+            if (!activeQuizObj || qIdx >= activeQuizObj.questions.length) return hostShowCourseIslandFinale();
+            activeQIdx = qIdx;
+            currentQuestionAnswers = {};
+            const qObj = activeQuizObj.questions[qIdx];
+            timeRemaining = qObj.time || 25;
+
+            document.getElementById('host-stage-lobby').classList.add('hidden');
+            document.getElementById('host-stage-question').classList.remove('hidden');
+            document.getElementById('host-barchart-area').classList.add('hidden');
+            document.getElementById('btn-host-reveal').classList.remove('hidden');
+            document.getElementById('btn-host-addtime').classList.remove('hidden');
+            document.getElementById('btn-host-next').classList.add('hidden');
+
+            document.getElementById('host-q-index-badge').innerText = `Question ${qIdx + 1} of ${activeQuizObj.questions.length}`;
+            document.getElementById('host-q-prompt-text').innerText = qObj.q;
+
+            const codeEl = document.getElementById('host-q-code-block');
+            if (qObj.code && qObj.code.trim()) { codeEl.innerText = qObj.code; codeEl.classList.remove('hidden'); }
+            else codeEl.classList.add('hidden');
+
+            const imgEl = document.getElementById('host-q-image-box');
+            if (qObj.image && qObj.image.trim()) { imgEl.src = qObj.image; imgEl.classList.remove('hidden'); }
+            else imgEl.classList.add('hidden');
+
+            renderHostChoiceCards(qObj, false);
+            updateHostAnswerCounter();
+
+            Object.keys(hostPlayers).forEach(pid => {
+                if (pid.startsWith('sim_')) {
+                    setTimeout(() => {
+                        if (activeQIdx === qIdx) {
+                            const picked = Math.random() < 0.75 ? qObj.correct : Math.floor(Math.random() * qObj.choices.length);
+                            currentQuestionAnswers[pid] = { choice: picked, pts: picked === qObj.correct ? 850 : 0 };
+                            if (picked === qObj.correct) hostPlayers[pid].score = (hostPlayers[pid].score || 0) + 850;
+                            updateHostAnswerCounter();
+                        }
+                    }, Math.random() * 3200 + 600);
+                }
+            });
+
+            clearInterval(timerInterval);
+            document.getElementById('host-timer-seconds').innerText = timeRemaining + 's';
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                document.getElementById('host-timer-seconds').innerText = Math.max(0, timeRemaining) + 's';
+                if (timeRemaining <= 0) { clearInterval(timerInterval); hostRevealResults(); }
+            }, 1000);
+        }
+
+        function hostAddExtraTime(sec) {
+            timeRemaining += sec;
+            document.getElementById('host-timer-seconds').innerText = timeRemaining + 's';
+        }
+
+        function updateHostAnswerCounter() {
+            document.getElementById('host-answers-counter').innerText = `${Object.keys(currentQuestionAnswers).length} / ${Object.keys(hostPlayers).length}`;
+        }
+
+        function renderHostChoiceCards(qObj, revealCorrect) {
+            const styles = ['ans-0', 'ans-1', 'ans-2', 'ans-3'];
+            const shapes = ['▲ A', '◆ B', '● C', '■ D'];
+            document.getElementById('host-choices-cards').innerHTML = qObj.choices.map((ch, idx) => {
+                const dimClass = (revealCorrect && idx !== qObj.correct) ? 'opacity-35 scale-95' : '';
+                const badge = (revealCorrect && idx === qObj.correct) ? '<span class="ml-auto bg-white text-slate-900 text-xs font-black px-3 py-1 rounded-full">✓ CORRECT</span>' : '';
+                return `
+                <div class="${styles[idx % 4]} ${dimClass} text-white p-5 md:p-6 rounded-2xl flex items-center space-x-4 transition duration-300">
+                    <span class="bg-black/20 px-3.5 py-2 rounded-xl font-black text-lg shrink-0">${shapes[idx % 4]}</span>
+                    <span class="font-extrabold text-lg md:text-xl leading-snug">${escapeHtml(ch)}</span>
+                    ${badge}
+                </div>`;
+            }).join('');
+        }
+
+        function hostRevealResults() {
+            clearInterval(timerInterval);
+            const qObj = activeQuizObj.questions[activeQIdx];
+            document.getElementById('btn-host-reveal').classList.add('hidden');
+            document.getElementById('btn-host-addtime').classList.add('hidden');
+            document.getElementById('btn-host-next').classList.remove('hidden');
+
+            renderHostChoiceCards(qObj, true);
+
+            const counts = qObj.choices.map(() => 0);
+            Object.values(currentQuestionAnswers).forEach(ans => { if (counts[ans.choice] !== undefined) counts[ans.choice]++; });
+            const totalAns = Math.max(1, Object.values(currentQuestionAnswers).length);
+            const barColors = ['palette-card-1', 'palette-card-2', 'palette-card-3', 'palette-card-4'];
+            const labels = ['A', 'B', 'C', 'D'];
+
+            document.getElementById('host-bars-container').innerHTML = qObj.choices.map((_, idx) => {
+                const pct = Math.round((counts[idx] / totalAns) * 100);
+                const heightPx = Math.max(18, Math.round((counts[idx] / totalAns) * 120));
+                const check = idx === qObj.correct ? '⭐ ' : '';
+                return `
+                <div class="flex flex-col items-center">
+                    <span class="text-xs font-extrabold text-slate-800 mb-1">${check}${counts[idx]} (${pct}%)</span>
+                    <div class="w-full max-w-[90px] ${barColors[idx % 4]} rounded-t-xl transition-all duration-500" style="height: ${heightPx}px"></div>
+                    <span class="mt-2 font-black text-sm text-slate-900">Option ${labels[idx]}</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('host-explanation-banner').innerText = qObj.explanation ? `💡 Explanation: ${qObj.explanation}` : `✅ Correct Answer: Option ${labels[qObj.correct]}`;
+            document.getElementById('host-barchart-area').classList.remove('hidden');
+        }
+
+        function hostAdvanceNext() {
+            if (activeQIdx + 1 < activeQuizObj.questions.length) hostStartQuestion(activeQIdx + 1);
+            else hostShowCourseIslandFinale();
+        }
+
+        function hostShowCourseIslandFinale() {
+            const playersArr = Object.values(hostPlayers).sort((a, b) => (b.score || 0) - (a.score || 0));
+            renderCourseIslandView({
+                course: activeQuizObj.course,
+                title: activeQuizObj.title,
+                percentage: 86,
+                pinLabel: `CLASS (86%)`,
+                leaderboard: playersArr.length ? playersArr : [{ name: "Class Average", score: 2450 }],
+                isSelfPaced: false
+            });
+        }
+
+        /********************************************************************
+         * 7. STUDENT CONTROLLER & SELF-PACED MODE
+         ********************************************************************/
+        async function studentJoinLiveRoom() {
+            const pin = document.getElementById('join-pin-input').value.trim();
+            const name = document.getElementById('join-name-input').value.trim() || 'Student_' + Math.floor(Math.random() * 900 + 100);
+            if (pin.length !== 4) return alert('Please enter a 4-digit Game PIN.');
+
+            myPlayerName = name;
+            localStorage.setItem('shahdom_student_name', myPlayerName);
+            currentRoomPin = pin;
+            myScore = 0; myStreak = 0; isSelfPacedMode = false;
+
+            document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
+            document.getElementById('student-player-label').innerText = myPlayerName;
+            document.getElementById('student-score-badge').innerText = '0 pts';
+            showView('student');
+
+            activeQuizObj = quizzes[0];
+            renderStudentQuestionScreen(activeQuizObj.questions[0], 0, activeQuizObj.questions.length);
+        }
+
+        function renderStudentQuestionScreen(qObj, qIndex, qTotal) {
+            document.getElementById('student-feedback-box').classList.add('hidden');
+            document.getElementById('student-q-num').innerText = `Question ${qIndex + 1} of ${qTotal}`;
+            document.getElementById('student-q-prompt').innerText = qObj.q;
+
+            const codeEl = document.getElementById('student-q-code');
+            if (qObj.code && qObj.code.trim()) { codeEl.innerText = qObj.code; codeEl.classList.remove('hidden'); }
+            else codeEl.classList.add('hidden');
+
+            const imgEl = document.getElementById('student-q-img');
+            if (qObj.image && qObj.image.trim()) { imgEl.src = qObj.image; imgEl.classList.remove('hidden'); }
+            else imgEl.classList.add('hidden');
+
+            const styles = ['ans-0', 'ans-1', 'ans-2', 'ans-3'];
+            const shapes = ['▲ A', '◆ B', '● C', '■ D'];
+            document.getElementById('student-buttons-grid').innerHTML = qObj.choices.map((ch, idx) => `
+                <button onclick="studentSubmitChoice(${idx})" class="${styles[idx % 4]} text-white p-5 rounded-2xl font-extrabold text-left flex items-center space-x-3 transition">
+                    <span class="bg-black/20 px-3 py-1.5 rounded-xl font-black text-base shrink-0">${shapes[idx % 4]}</span>
+                    <span class="text-base leading-snug">${escapeHtml(ch)}</span>
+                </button>
+            `).join('');
+        }
+
+        function studentSubmitChoice(choiceIdx) {
+            if (isSelfPacedMode) return handleSelfPacedAnswer(choiceIdx);
+            document.getElementById('student-buttons-grid').innerHTML = `
+                <div class="col-span-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-900 p-6 rounded-2xl text-center font-extrabold">
+                    ✅ Choice Locked In! Waiting for class bar chart...
+                </div>`;
+            myScore += 850;
+            document.getElementById('student-score-badge').innerText = myScore + ' pts';
+        }
+
+        function startSelfPacedQuiz(quizId) {
+            selfPacedQuiz = quizzes.find(q => q.id === quizId) || quizzes[0];
+            selfPacedQIdx = 0; selfPacedCorrectCount = 0; myScore = 0; myStreak = 0;
+            isSelfPacedMode = true;
+
+            if (!myPlayerName) {
+                myPlayerName = "FIU Challenger";
+                localStorage.setItem('shahdom_student_name', myPlayerName);
+            }
+
+            document.getElementById('student-mode-pill').innerText = `${selfPacedQuiz.course} • Shahdom Self-Paced`;
+            document.getElementById('student-player-label').innerText = myPlayerName;
+            document.getElementById('student-score-badge').innerText = '0 pts';
+            showView('student');
+            renderStudentQuestionScreen(selfPacedQuiz.questions[0], 0, selfPacedQuiz.questions.length);
+        }
+
+        function handleSelfPacedAnswer(choiceIdx) {
+            const qObj = selfPacedQuiz.questions[selfPacedQIdx];
+            const isRight = (choiceIdx === qObj.correct);
+            if (isRight) { selfPacedCorrectCount++; myStreak++; myScore += 100 + (myStreak * 20); }
+            else { myStreak = 0; }
+            document.getElementById('student-score-badge').innerText = myScore + ' pts';
+
+            document.getElementById('student-buttons-grid').innerHTML = '';
+            const fb = document.getElementById('student-feedback-box');
+            fb.classList.remove('hidden');
+            fb.className = `p-6 rounded-2xl text-center space-y-4 border-2 ${isRight ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-rose-50 border-rose-300 text-rose-950'}`;
+            fb.innerHTML = `
+                <div class="text-2xl font-black">${isRight ? '🎉 Correct! (+' + (100 + myStreak * 20) + ' pts)' : '❌ Not Quite!'}</div>
+                <p class="text-sm font-bold">Correct Answer: <span class="underline">${escapeHtml(qObj.choices[qObj.correct])}</span></p>
+                ${qObj.explanation ? `<p class="text-xs font-medium bg-white/80 p-3 rounded-xl border border-slate-200">${escapeHtml(qObj.explanation)}</p>` : ''}
+                <button onclick="advanceSelfPacedQuestion()" class="btn-coral font-extrabold px-8 py-3 rounded-xl text-sm shadow transition">
+                    ${selfPacedQIdx + 1 < selfPacedQuiz.questions.length ? 'Next Question →' : '👑 See Shahdom Course Island & Rank →'}
+                </button>
+            `;
+        }
+
+        function advanceSelfPacedQuestion() {
+            selfPacedQIdx++;
+            if (selfPacedQIdx < selfPacedQuiz.questions.length) {
+                renderStudentQuestionScreen(selfPacedQuiz.questions[selfPacedQIdx], selfPacedQIdx, selfPacedQuiz.questions.length);
+            } else {
+                const pct = Math.round((selfPacedCorrectCount / selfPacedQuiz.questions.length) * 100);
+                const baselinePeers = [
+                    { name: "Sofia R.", score: 340, pct: 92 },
+                    { name: "Alejandro M.", score: 260, pct: 78 },
+                    { name: "Daniel K.", score: 220, pct: 67 },
+                    { name: myPlayerName, score: myScore, pct: pct }
+                ].sort((a, b) => b.score - a.score);
+
+                renderCourseIslandView({
+                    course: selfPacedQuiz.course,
+                    title: selfPacedQuiz.title,
+                    percentage: pct,
+                    pinLabel: `${myPlayerName} (${pct}%)`,
+                    leaderboard: baselinePeers,
+                    isSelfPaced: true
+                });
+            }
+        }
+
+        function retakeCurrentSelfPaced() {
+            if (selfPacedQuiz) startSelfPacedQuiz(selfPacedQuiz.id);
+        }
+
+        /********************************************************************
+         * 8. COURSE ISLAND MAP & CSV EXPORT
+         ********************************************************************/
+        let lastExportableLeaderboard = [];
+
+        function renderCourseIslandView(opts) {
+            showView('island');
+            lastExportableLeaderboard = opts.leaderboard || [];
+            document.getElementById('island-course-badge').innerText = `${opts.course} • Shahdom Expedition Summary`;
+            document.getElementById('island-main-title').innerText = `${opts.course} Shahdom Course Island 🏝️`;
+            document.getElementById('island-accuracy-pill').innerText = `Mastery Score: ${opts.percentage}%`;
+
+            const retakeBtn = document.getElementById('btn-retake-quiz');
+            if (opts.isSelfPaced) retakeBtn.classList.remove('hidden');
+            else retakeBtn.classList.add('hidden');
+
+            const coords = [
+                { x: 130, y: 195, name: "Foundations Cove" },
+                { x: 285, y: 175, name: "Logic Lagoon" },
+                { x: 450, y: 145, name: "Algorithm Ridge" },
+                { x: 605, y: 135, name: "Architecture Fort" },
+                { x: 725, y: 45,  name: "Shahdom Mastery Peak 👑" }
+            ];
+            const milestoneIdx = Math.min(4, Math.floor((opts.percentage / 100) * 4.99));
+            const target = coords[milestoneIdx];
+
+            document.getElementById('island-player-pin').setAttribute('transform', `translate(${target.x}, ${target.y})`);
+            document.getElementById('island-pin-label').textContent = opts.pinLabel;
+
+            document.getElementById('island-stats-box').innerHTML = `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center">
+                    <span>🏝️ Landmark Reached:</span>
+                    <span class="font-extrabold text-[#0d47a1]">${target.name}</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center">
+                    <span>🎯 Accuracy / Mastery Score:</span>
+                    <span class="font-extrabold text-[#2e944b]">${opts.percentage}%</span>
+                </div>
+            `;
+
+            document.getElementById('island-leaderboard-list').innerHTML = opts.leaderboard.slice(0, 15).map((p, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                return `
+                <div class="bg-white border border-slate-200 px-4 py-3 rounded-xl flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-extrabold text-slate-700 w-6">${medal}</span>
+                        <span class="font-extrabold text-slate-900">${escapeHtml(p.name)}</span>
+                    </div>
+                    <span class="font-mono font-extrabold text-[#0d47a1]">${p.score || 0} pts ${p.pct !== undefined ? '(' + p.pct + '%)' : ''}</span>
+                </div>`;
+            }).join('');
+
+            if (typeof confetti === 'function') confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function exportScoresCSV() {
+            if (!lastExportableLeaderboard.length) return alert('No student scores to export yet.');
+            let csv = "Rank,Student Name,Score,Percentage\n";
+            lastExportableLeaderboard.forEach((p, i) => {
+                csv += `${i + 1},"${(p.name || '').replace(/"/g, '""')}",${p.score || 0},${p.pct !== undefined ? p.pct + '%' : 'N/A'}\n`;
+            });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            a.download = `shahdom_scores_${Date.now()}.csv`;
+            a.click();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        }
+    </script>
+</body>
+</html>
