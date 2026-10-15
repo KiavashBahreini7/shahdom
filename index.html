@@ -1385,14 +1385,14 @@
             renderHostLobbyPlayers();
         }
 
-        async function hostStartQuestion(qIdx) {
+async function hostStartQuestion(qIdx) {
             if (!activeQuizObj || qIdx >= activeQuizObj.questions.length) return hostShowCourseIslandFinale();
             activeQIdx = qIdx;
             currentQuestionAnswers = {};
             const qObj = activeQuizObj.questions[qIdx];
             timeRemaining = qObj.time || 25;
 
-            // Broadcast active question to all connected students via Firebase
+            // Broadcast active question state and payload directly to RTDB
             if (isCloudConnected && currentRoomPin) {
                 const roomPayload = {
                     status: 'question',
@@ -1406,9 +1406,9 @@
                         choices: qObj.choices
                     }
                 };
-                if (activeEngine === 'rtdb' && dbRT) {
+                if (dbRT) {
                     await dbRT.ref('rooms/' + currentRoomPin).update(roomPayload);
-                } else if (activeEngine === 'firestore' && dbFS) {
+                } else if (dbFS) {
                     await dbFS.collection('rooms').doc(currentRoomPin).update(roomPayload);
                 }
             }
@@ -1455,6 +1455,7 @@
                 if (timeRemaining <= 0) { clearInterval(timerInterval); hostRevealResults(); }
             }, 1000);
         }
+
 
         function hostAddExtraTime(sec) {
             timeRemaining += sec;
@@ -1547,24 +1548,21 @@ async function studentJoinLiveRoom() {
                 try { dbRT = firebase.database(); } catch (e) {}
             }
 
-            // Sync student identity to room lobby
+            if (!dbRT) {
+                alert("Cannot connect to Realtime Database. Check network or reload.");
+                return;
+            }
+
+            // Write student name to room
             try {
-                if (dbRT) {
-                    await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
-                        name: myPlayerName,
-                        score: 0,
-                        joinedAt: Date.now()
-                    });
-                } else if (dbFS) {
-                    await dbFS.collection('rooms').doc(pin).collection('players').doc(myPlayerId).set({
-                        name: myPlayerName,
-                        score: 0,
-                        joinedAt: Date.now()
-                    });
-                }
+                await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
+                    name: myPlayerName,
+                    score: 0,
+                    joinedAt: Date.now()
+                });
             } catch (err) {
-                console.error("Failed to sync player to room:", err);
-                alert("Could not join session: " + err.message);
+                console.error("Join write error:", err);
+                alert("Join error: " + err.message);
                 return;
             }
 
@@ -1573,27 +1571,55 @@ async function studentJoinLiveRoom() {
             document.getElementById('student-score-badge').innerText = '0 pts';
             showView('student');
 
-            // Set waiting state until instructor begins Question 1
+            // Set waiting state
             document.getElementById('student-buttons-grid').innerHTML = '';
+            document.getElementById('student-feedback-box').classList.add('hidden');
             document.getElementById('student-q-num').innerText = 'Waiting for Instructor...';
-            document.getElementById('student-q-prompt').innerText = "You're in! Waiting for the instructor to launch Question 1...";
+            document.getElementById('student-q-prompt').innerText = "You're in! Waiting for the instructor to start Question 1...";
             document.getElementById('student-q-code').classList.add('hidden');
             document.getElementById('student-q-img').classList.add('hidden');
 
-            // Real-time listener: binds student screen directly to host broadcasts
-            if (dbRT) {
-                dbRT.ref('rooms/' + pin).on('value', snap => {
-                    const roomData = snap.val();
-                    if (!roomData) return;
-                    if (roomData.status === 'question' && roomData.qObj) {
-                        renderStudentQuestionScreen(roomData.qObj, roomData.qIdx, roomData.totalQuestions || 5);
-                    } else if (roomData.status === 'finale') {
-                        showView('island');
-                    }
-                });
-            }
+            // Listen to room events in real time
+            dbRT.ref('rooms/' + pin).on('value', snap => {
+                const room = snap.val();
+                if (!room) return;
+
+                if (room.status === 'question' && room.qObj) {
+                    activeQIdx = room.qIdx; // Sets active question index directly on the student phone!
+                    renderStudentQuestionScreen(room.qObj, room.qIdx, room.totalQuestions || 5);
+                } else if (room.status === 'lobby') {
+                    document.getElementById('student-q-num').innerText = 'Waiting for Instructor...';
+                    document.getElementById('student-q-prompt').innerText = "In Lobby. Waiting for Question 1 to start...";
+                    document.getElementById('student-buttons-grid').innerHTML = '';
+                } else if (room.status === 'finale') {
+                    showView('island');
+                }
+            });
         }
 
+        async function studentSubmitChoice(choiceIdx) {
+            if (isSelfPacedMode) return handleSelfPacedAnswer(choiceIdx);
+
+            if (dbRT && currentRoomPin && activeQIdx !== undefined) {
+                try {
+                    await dbRT.ref('rooms/' + currentRoomPin + '/answers/' + activeQIdx + '/' + myPlayerId).set({
+                        choice: choiceIdx,
+                        playerId: myPlayerId,
+                        timestamp: Date.now()
+                    });
+                } catch (e) {
+                    console.error("Answer submit failed:", e);
+                }
+            }
+
+            document.getElementById('student-buttons-grid').innerHTML = `
+                <div class="col-span-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-900 p-6 rounded-2xl text-center font-extrabold shadow-sm">
+                    ✅ Choice Locked In! Waiting for question results...
+                </div>`;
+            myScore += 850;
+            document.getElementById('student-score-badge').innerText = myScore + ' pts';
+        }
+        
 
         function renderStudentQuestionScreen(qObj, qIndex, qTotal) {
             document.getElementById('student-feedback-box').classList.add('hidden');
