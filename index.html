@@ -1392,6 +1392,27 @@
             const qObj = activeQuizObj.questions[qIdx];
             timeRemaining = qObj.time || 25;
 
+            // Broadcast active question to all connected students via Firebase
+            if (isCloudConnected && currentRoomPin) {
+                const roomPayload = {
+                    status: 'question',
+                    qIdx: activeQIdx,
+                    totalQuestions: activeQuizObj.questions.length,
+                    qObj: {
+                        q: qObj.q,
+                        code: qObj.code || '',
+                        image: qObj.image || '',
+                        time: timeRemaining,
+                        choices: qObj.choices
+                    }
+                };
+                if (activeEngine === 'rtdb' && dbRT) {
+                    await dbRT.ref('rooms/' + currentRoomPin).update(roomPayload);
+                } else if (activeEngine === 'firestore' && dbFS) {
+                    await dbFS.collection('rooms').doc(currentRoomPin).update(roomPayload);
+                }
+            }
+
             document.getElementById('host-stage-lobby').classList.add('hidden');
             document.getElementById('host-stage-question').classList.remove('hidden');
             document.getElementById('host-barchart-area').classList.add('hidden');
@@ -1511,61 +1532,68 @@
          * 7. STUDENT CONTROLLER & SELF-PACED MODE
          ********************************************************************/
 async function studentJoinLiveRoom() {
-    const pin = document.getElementById('join-pin-input').value.trim();
-    const name = document.getElementById('join-name-input').value.trim() || ('Student_' + Math.floor(Math.random() * 900 + 100));
-    if (pin.length !== 4) return alert('Please enter a 4-digit Game PIN.');
+            const pin = document.getElementById('join-pin-input').value.trim();
+            const name = document.getElementById('join-name-input').value.trim() || ('Student_' + Math.floor(Math.random() * 900 + 100));
+            if (pin.length !== 4) return alert('Please enter a 4-digit Game PIN.');
 
-    myPlayerName = name;
-    localStorage.setItem('shahdom_student_name', myPlayerName);
-    currentRoomPin = pin;
-    myScore = 0;
-    myStreak = 0;
-    isSelfPacedMode = false;
+            myPlayerName = name;
+            localStorage.setItem('shahdom_student_name', myPlayerName);
+            currentRoomPin = pin;
+            myScore = 0;
+            myStreak = 0;
+            isSelfPacedMode = false;
 
-    // Ensure Firebase database instance exists before writing
-    if (!dbRT && firebase.apps.length) {
-        try {
-            dbRT = firebase.database();
-        } catch (e) {
-            console.error("RTDB init fallback failed:", e);
-        }
-    }
+            if (!dbRT && firebase.apps.length) {
+                try { dbRT = firebase.database(); } catch (e) {}
+            }
 
-    // Write player entry to the room in Firebase Realtime Database
-    if (dbRT) {
-        try {
-            await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
-                name: myPlayerName,
-                score: 0,
-                joinedAt: Date.now()
-            });
-        } catch (err) {
-            console.error("Firebase write error:", err);
-            alert("Could not connect to session. Check your connection or PIN: " + err.message);
-            return;
-        }
-    } else {
-        alert("Firebase Realtime Database is not initialized. Please verify your configuration.");
-        return;
-    }
+            // Sync student identity to room lobby
+            try {
+                if (dbRT) {
+                    await dbRT.ref('rooms/' + pin + '/players/' + myPlayerId).set({
+                        name: myPlayerName,
+                        score: 0,
+                        joinedAt: Date.now()
+                    });
+                } else if (dbFS) {
+                    await dbFS.collection('rooms').doc(pin).collection('players').doc(myPlayerId).set({
+                        name: myPlayerName,
+                        score: 0,
+                        joinedAt: Date.now()
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to sync player to room:", err);
+                alert("Could not join session: " + err.message);
+                return;
+            }
 
-    document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
-    document.getElementById('student-player-label').innerText = myPlayerName;
-    document.getElementById('student-score-badge').innerText = '0 pts';
-    showView('student');
+            document.getElementById('student-mode-pill').innerText = `Shahdom PIN: ${pin}`;
+            document.getElementById('student-player-label').innerText = myPlayerName;
+            document.getElementById('student-score-badge').innerText = '0 pts';
+            showView('student');
 
-    // Listen for room status updates from instructor
-    dbRT.ref('rooms/' + pin).on('value', snap => {
-        const roomData = snap.val();
-        if (!roomData) return;
-        if (roomData.status === 'question' && roomData.qIdx !== undefined) {
-            // Load live question pushed by host
-            if (activeQuizObj && activeQuizObj.questions[roomData.qIdx]) {
-                renderStudentQuestionScreen(activeQuizObj.questions[roomData.qIdx], roomData.qIdx, activeQuizObj.questions.length);
+            // Set waiting state until instructor begins Question 1
+            document.getElementById('student-buttons-grid').innerHTML = '';
+            document.getElementById('student-q-num').innerText = 'Waiting for Instructor...';
+            document.getElementById('student-q-prompt').innerText = "You're in! Waiting for the instructor to launch Question 1...";
+            document.getElementById('student-q-code').classList.add('hidden');
+            document.getElementById('student-q-img').classList.add('hidden');
+
+            // Real-time listener: binds student screen directly to host broadcasts
+            if (dbRT) {
+                dbRT.ref('rooms/' + pin).on('value', snap => {
+                    const roomData = snap.val();
+                    if (!roomData) return;
+                    if (roomData.status === 'question' && roomData.qObj) {
+                        renderStudentQuestionScreen(roomData.qObj, roomData.qIdx, roomData.totalQuestions || 5);
+                    } else if (roomData.status === 'finale') {
+                        showView('island');
+                    }
+                });
             }
         }
-    });
-}
+
 
         function renderStudentQuestionScreen(qObj, qIndex, qTotal) {
             document.getElementById('student-feedback-box').classList.add('hidden');
@@ -1590,15 +1618,30 @@ async function studentJoinLiveRoom() {
             `).join('');
         }
 
-        function studentSubmitChoice(choiceIdx) {
+async function studentSubmitChoice(choiceIdx) {
             if (isSelfPacedMode) return handleSelfPacedAnswer(choiceIdx);
+
+            // Transmit answer choice to host via Realtime Database
+            if (dbRT && currentRoomPin) {
+                try {
+                    await dbRT.ref('rooms/' + currentRoomPin + '/answers/' + activeQIdx + '/' + myPlayerId).set({
+                        choice: choiceIdx,
+                        playerId: myPlayerId,
+                        timestamp: Date.now()
+                    });
+                } catch (e) {
+                    console.error("Answer submit failed:", e);
+                }
+            }
+
             document.getElementById('student-buttons-grid').innerHTML = `
-                <div class="col-span-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-900 p-6 rounded-2xl text-center font-extrabold">
-                    ✅ Choice Locked In! Waiting for class bar chart...
+                <div class="col-span-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-900 p-6 rounded-2xl text-center font-extrabold shadow-sm">
+                    ✅ Choice Locked In! Eyes on the projector board...
                 </div>`;
             myScore += 850;
             document.getElementById('student-score-badge').innerText = myScore + ' pts';
         }
+        
 
         function startSelfPacedQuiz(quizId) {
             selfPacedQuiz = quizzes.find(q => q.id === quizId) || quizzes[0];
