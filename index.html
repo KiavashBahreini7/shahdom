@@ -914,7 +914,7 @@
                     fbApp = !firebase.apps.length ? firebase.initializeApp(cfg) : firebase.app();
                     if (cfg.databaseURL) dbRT = firebase.database();
                     dbFS = firebase.firestore();
-                    firebase.auth().signInAnonymously().catch(() => {});
+                    // firebase.auth().signInAnonymously().catch(() => {});
                     isCloudConnected = true;
                     syncQuizzesFromCloud();
                 } catch (err) {
